@@ -22,6 +22,8 @@ protected:
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	class UDecalComponent* CursorToWorld;
+
+	
 	
 
 public:	
