@@ -9,15 +9,21 @@
 #include "Components/SceneComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "NiagaraSystem.h"
-
+#include "Animation/AnimInstance.h"
 
 
 // Sets default values
 ABrawlStarsCharacter::ABrawlStarsCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+
+	//ConstructorHelpers::FObjectFinder< UNiagaraSystem > NiagaraSystem = (TEXT("/Game/edgar/Decal/Smoke_Ns.Smoke_NS'"));
+	//if (NiagaraSystem.Succeeded())
+	//{
+	//	ESkillPostNiagara = NiagaraSystem.Object;
+	//}
 
 	bIsESkill = false;
 	bSetVisibility = false;
@@ -28,7 +34,7 @@ ABrawlStarsCharacter::ABrawlStarsCharacter()
 void ABrawlStarsCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -49,7 +55,7 @@ void ABrawlStarsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 void ABrawlStarsCharacter::ESkill()
 {
-	UE_LOG(LogTemp, Warning, TEXT("eee"));
+	/*UE_LOG(LogTemp, Warning, TEXT("eee"));*/
 	bool DoOnce = true;
 	if (DoOnce)
 	{
@@ -57,16 +63,28 @@ void ABrawlStarsCharacter::ESkill()
 		bIsESkill = true;
 		GetCharacterMovement()->Deactivate();
 		GetCharacterMovement()->StopMovementImmediately();
-		float PlayMontage = PlayAnimMontage(ESkillMontage, 1.0f, TEXT("None"));
-		if (!(ESkillMontage->IsValidToPlay()))
-		{
-			bSetVisibility = true;
-			GetCharacterMovement()->Activate();
-			bIsESkill = false;
-			DoOnce = true;
 
-			//spawnactor bp erange는 나중에
-		}
+		PlayAnAnimationMontage();
+		DoOnce = true;
+		/*FOnMontageBlendingOutStarted OnCompleted;*/
+		/*OnCompleted.BindUObject(this, &ABrawlStarsCharacter::EMontageCompleted);*/
+	
+			
+
+
+
+
+		//if (!(ESkillMontage->IsValidToPlay()))
+		//{
+		//	
+		//	bSetVisibility = true;
+		//	GetCharacterMovement()->Activate();
+		//	bIsESkill = false;
+		//	DoOnce = true;
+
+
+		//	//spawnactor bp erange는 나중에
+		//}
 
 		float WaitTime = { 0.9f }; //시간을 설정하고
 		GetWorld()->GetTimerManager().SetTimer(DelayTimeHandle, FTimerDelegate::CreateLambda([&]()
@@ -74,9 +92,9 @@ void ABrawlStarsCharacter::ESkill()
 
 				// 여기에 코드를 치면 된다.
 				USkeletalMeshComponent* TestMesh = GetMesh();
-				
-				ConstructorHelpers::FObjectFinder< UNiagaraSystem > NiagaraSyste = (TEXT("/Game/edgar/Decal/Smoke_Ns.Smoke_NS'"));
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraSyste.Object, TestMesh->GetSocketLocation(TEXT("L_ankle_s")));
+
+
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ESkillPostNiagara, TestMesh->GetSocketLocation(TEXT("L_ankle_s")));
 
 				float WaitTime2 = { 5.0f }; //시간을 설정하고
 				GetWorld()->GetTimerManager().SetTimer(DelayTimeHandle, FTimerDelegate::CreateLambda([&]()
@@ -91,9 +109,30 @@ void ABrawlStarsCharacter::ESkill()
 			}
 		), WaitTime, false); //반복도 여기서 추가 변수를 선언해 설정가능
 
-		 
+
+
 
 	}
 
 }
 
+void ABrawlStarsCharacter::PlayAnAnimationMontage()
+{
+	
+
+	if (ESkillMontage)
+	{
+		Montage_Play(ESkillMontage, 1.0f);
+		FOnMontageBlendingOutStarted CompleteDelegate;
+		CompleteDelegate.BindUObject(this, &ABrawlStarsCharacter::FunctionToExecuteOnAnimationEnd);
+		Montage_SetEndDelegate(CompleteDelegate, ESkillMontage);
+	}
+}
+
+void ABrawlStarsCharacter::FunctionToExecuteOnAnimationEnd()
+{
+	bSetVisibility = true;
+	GetCharacterMovement()->Activate();
+	bIsESkill = false;
+	
+}

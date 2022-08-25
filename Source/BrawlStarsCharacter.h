@@ -57,14 +57,24 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		bool bIsTemporDamage;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere, Category = Montage)
 		class UAnimMontage* ESkillMontage;
+
+	UPROPERTY(EditAnywhere, Category = Niagara)
+		class UNiagaraSystem* ESkillPostNiagara;
+	
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+		FOnMontageStartedMCDelegate CompletedMontage;
 
 public:
 	UFUNCTION(BlueprintCallable)
 	void ESkill();
-
 	FTimerHandle DelayTimeHandle;
+	
+
+public:
+	void PlayAnAnimationMontage();
+	void FunctionToExecuteOnAnimationEnd();
 
 
 };
